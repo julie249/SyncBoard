@@ -7,10 +7,33 @@ import { ENV } from '../config/env.js';
 
 let ioInstance = null;
 
+const parseAllowedOrigins = (configuredValue) => {
+  if (!configuredValue) return [];
+  return configuredValue
+    .split(',')
+    .map((item) => item.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+};
+
 export const initSocketServer = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: ENV.CLIENT_URL,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const cleanOrigin = origin.replace(/\/$/, '');
+        const configuredOrigins = parseAllowedOrigins(ENV.CLIENT_URL);
+        const isAllowed =
+          configuredOrigins.includes(cleanOrigin) ||
+          cleanOrigin.startsWith('http://localhost:') ||
+          cleanOrigin.startsWith('http://127.0.0.1:') ||
+          cleanOrigin.endsWith('.onrender.com');
+
+        if (isAllowed) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST']
     }

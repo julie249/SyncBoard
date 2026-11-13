@@ -1,7 +1,14 @@
 import axios from 'axios';
 
+// Ensure baseURL handles custom domains with or without trailing /api
+const rawBaseURL = import.meta.env.VITE_API_URL || '/api';
+const cleanBase = rawBaseURL.replace(/\/$/, '');
+const baseURL = cleanBase.endsWith('/api') || cleanBase === '/api'
+  ? cleanBase
+  : `${cleanBase}/api`;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'

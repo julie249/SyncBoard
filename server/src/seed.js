@@ -12,6 +12,12 @@ import { Notification } from './models/Notification.js';
 
 const seedDatabase = async () => {
   try {
+    if (process.env.NODE_ENV === 'production' && !process.argv.includes('--force')) {
+      console.warn('[Seed Protection] Direct database wipe is prevented in production mode.');
+      console.warn('To confirm seeding demo data in production, run: node src/seed.js --force');
+      process.exit(0);
+    }
+
     await connectDB();
     console.log('[Seed] Connected to database. Clearing old data...');
 

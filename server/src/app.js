@@ -24,14 +24,35 @@ const app = express();
 app.use(helmet());
 
 // CORS configuration
+const parseAllowedOrigins = (configuredValue) => {
+  if (!configuredValue) return [];
+  return configuredValue
+    .split(',')
+    .map((item) => item.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+};
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, postman) or matching CLIENT_URL
-      if (!origin || origin === ENV.CLIENT_URL || origin.startsWith('http://localhost:')) {
+      // Allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const cleanOrigin = origin.replace(/\/$/, '');
+      const configuredOrigins = parseAllowedOrigins(ENV.CLIENT_URL);
+
+      const isAllowed =
+        configuredOrigins.includes(cleanOrigin) ||
+        cleanOrigin.startsWith('http://localhost:') ||
+        cleanOrigin.startsWith('http://127.0.0.1:') ||
+        cleanOrigin.endsWith('.onrender.com');
+
+      if (isAllowed) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
       }
     },
     credentials: true,

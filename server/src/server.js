@@ -11,8 +11,8 @@ const startServer = async () => {
     const httpServer = http.createServer(app);
     initSocketServer(httpServer);
 
-    httpServer.listen(ENV.PORT, () => {
-      console.log(`[SyncBoard Server] Listening on port ${ENV.PORT} in ${ENV.NODE_ENV} mode`);
+    httpServer.listen(ENV.PORT, '0.0.0.0', () => {
+      console.log(`[SyncBoard Server] Listening on port ${ENV.PORT} on 0.0.0.0 in ${ENV.NODE_ENV} mode`);
     });
   } catch (error) {
     console.error(`Failed to start server:`, error);
